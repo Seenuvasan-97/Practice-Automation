@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="ONE test run" thread-count="1">
+    <listeners>
+        <listener class-name="Listeners.TestListeners"/>
+    </listeners>
+    <test name="login B2B">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="tests.LoginTestForB2B"/>
+        </classes>
+    </test>
+
+</suite>
