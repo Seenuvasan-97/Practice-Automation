@@ -11,7 +11,7 @@ public class ExtentManager {
 
     public static ExtentReports getExtentReports(){
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String reportPath = System.getProperty("user.dir")+"/reports/automation reports"+"_"+timeStamp+".html";
+        String reportPath = System.getProperty("user.dir")+"/reports/automation reports"+"_"+timeStamp+".pdf";
         if (extentReports == null) {
 
             ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath);
