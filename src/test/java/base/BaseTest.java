@@ -13,6 +13,7 @@ public class BaseTest {
     private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
     public static WebDriver getDriver(){
+
         return driver.get();
     }
     @Parameters("browser")
@@ -38,7 +39,8 @@ public class BaseTest {
 
     }
     @AfterMethod
-    public void tearDown(){
+    public void tearDown() throws InterruptedException {
+        Thread.sleep(20000);
         if (getDriver() != null) {
             getDriver().quit();
             driver.remove();

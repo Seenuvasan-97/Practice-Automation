@@ -6,24 +6,41 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ScreenshotUtil {
 
-    public static String captureScreenshot(WebDriver driver, String testName){
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String screenshotPath = System.getProperty("user.dir")+"/screenshots/"+testName+"_"+testName+".png";
-        File source = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-        File destination = new File(screenshotPath);
+    public static String captureScreenshot(WebDriver driver, String testName, String stepName) {
+
+        String timeStamp =
+                new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
+                        .format(new Date());
+
+        String screenshotDir =
+                System.getProperty("user.dir")
+                        + File.separator
+                        + "screenshots"
+                        + File.separator
+                        + testName;
+
+        new File(screenshotDir).mkdirs();
+
+        String screenshotPath =
+                screenshotDir
+                        + File.separator
+                        + stepName + "_" + timeStamp + ".png";
+
+        File src =
+                ((TakesScreenshot) driver)
+                        .getScreenshotAs(OutputType.FILE);
+
         try {
-            FileUtils.copyFile(source, destination);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            FileUtils.copyFile(src, new File(screenshotPath));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return screenshotPath;
-
     }
-
 }

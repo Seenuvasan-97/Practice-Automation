@@ -22,5 +22,14 @@ public class ConfigReader {
         return prop.getProperty(Key);
 
     }
+    public static String getBrowser() {
 
+        return System.getProperty("browser", getProperty("browser"));
+    }
+    public static String getReportPath() {
+
+        return getProperty("report.path");
+    }
 }
+
+

@@ -1,70 +1,113 @@
 package Listeners;
 
-import Utils.ExtentManager;
+import Utils.ExtentReportManager;
 import Utils.ScreenshotUtil;
 import base.BaseTest;
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
 public class TestListeners implements ITestListener {
-    private static ExtentReports extentReports = ExtentManager.getExtentReports();
-    private static ThreadLocal<ExtentTest>test = new ThreadLocal<>();
 
+    private static final Logger logger =
+            LoggerFactory.getLogger(TestListeners.class);
+
+    // 🔹 Suite start
+    @Override
+    public void onStart(ITestContext context) {
+        logger.info("========================================");
+        logger.info("Test Suite Started: {}", context.getName());
+        logger.info("========================================");
+
+        // ✅ Initialize Extent report once
+        ExtentReportManager.initReports();
+    }
+
+    // 🔹 Test start
     @Override
     public void onTestStart(ITestResult result) {
-        ExtentTest extentTest = extentReports.createTest(result.getMethod().getMethodName());
-        test.set(extentTest);
+        logger.info("----------------------------------------");
+        logger.info("Test Started: {}", result.getMethod().getMethodName());
+        logger.info("Description: {}", result.getMethod().getDescription());
+        logger.info("----------------------------------------");
+
+        // ✅ Create Extent test
+        ExtentReportManager.createTest(
+                result.getMethod().getMethodName()
+        );
+
+        ExtentReportManager.getTest()
+                .log(Status.INFO, "Test execution started");
     }
 
+    // 🔹 Test success
     @Override
     public void onTestSuccess(ITestResult result) {
+        logger.info("✓ Test PASSED: {} (Duration: {}ms)",
+                result.getMethod().getMethodName(),
+                result.getEndMillis() - result.getStartMillis());
 
-        test.get().pass("Test Passed");
-        String screenshotPath = ScreenshotUtil.captureScreenshot(
-                BaseTest.getDriver(),
-                result.getMethod().getMethodName()
-        );
-
-        try {
-            test.get().addScreenCaptureFromPath(screenshotPath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ExtentReportManager.getTest()
+                .log(Status.PASS, "Test passed successfully");
     }
 
+    // 🔹 Test failure
     @Override
     public void onTestFailure(ITestResult result) {
+        logger.error("✗ Test FAILED: {} (Duration: {}ms)",
+                result.getMethod().getMethodName(),
+                result.getEndMillis() - result.getStartMillis());
 
-        test.get().fail(result.getThrowable());
+        logger.error("Failure Reason:", result.getThrowable());
 
-        String screenshotPath = ScreenshotUtil.captureScreenshot(
-                BaseTest.getDriver(),
-                result.getMethod().getMethodName()
-        );
+        // 🔴 Log failure in Extent
+        ExtentReportManager.getTest()
+                .log(Status.FAIL, result.getThrowable());
 
+        // 📸 Capture screenshot (UI tests only)
         try {
-            test.get().addScreenCaptureFromPath(screenshotPath);
+            String screenshotPath =
+                    ScreenshotUtil.captureScreenshot(
+                            BaseTest.getDriver(),
+                            result.getMethod().getMethodName(),"Failure"
+                    );
+
+            ExtentReportManager.getTest()
+                    .addScreenCaptureFromPath(screenshotPath);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to capture screenshot", e);
         }
     }
 
+    // 🔹 Test skipped
     @Override
     public void onTestSkipped(ITestResult result) {
+        logger.warn("⊘ Test SKIPPED: {}",
+                result.getMethod().getMethodName());
 
-        test.get().skip("Test Skipped");
+        ExtentReportManager.getTest()
+                .log(Status.SKIP,
+                        result.getThrowable() != null
+                                ? result.getThrowable().getMessage()
+                                : "Test skipped");
     }
 
+    // 🔹 Suite finish
     @Override
     public void onFinish(ITestContext context) {
+        logger.info("========================================");
+        logger.info("Test Suite Finished: {}", context.getName());
+        logger.info("Total Tests Run: {}", context.getAllTestMethods().length);
+        logger.info("Tests Passed: {}", context.getPassedTests().size());
+        logger.info("Tests Failed: {}", context.getFailedTests().size());
+        logger.info("Tests Skipped: {}", context.getSkippedTests().size());
+        logger.info("========================================");
 
-        extentReports.flush();
+        // ✅ Flush Extent report
+        ExtentReportManager.flushReports();
     }
 }
-
-
-
-
